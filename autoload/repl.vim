@@ -85,6 +85,7 @@ function! repl#restart_repl()
     call termopen(target)
     let newbuf = bufnr('%')
     exe bufwinnr(parent) . "wincmd w"
+    exe 'bdelete! ' . s:repl_linkage[parent]
     let s:repl_linkage[parent] = newbuf
   endif
 endfunction
