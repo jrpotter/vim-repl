@@ -41,15 +41,13 @@ endif
 " MAPPINGS: Plug Mappings {{{1
 " ======================================================================
 
-nnoremap <Plug>REPL_RestartHorizontalRepl
-    \ :<C-u>call repl#restart_repl(0)<CR>
-nnoremap <Plug>REPL_RestartVerticalRepl
-    \ :<C-u>call repl#restart_repl(1)<CR>
-nnoremap <Plug>REPL_SendLineToRepl
+nnoremap <silent> <Plug>REPL_RestartRepl
+    \ :<C-u>call repl#restart_repl()<CR>
+nnoremap <silent> <Plug>REPL_SendLineToRepl
     \ :<C-u>call repl#send_to_repl(getline('.'))<CR>
-nnoremap <Plug>REPL_SendFileToRepl
+nnoremap <silent> <Plug>REPL_SendFileToRepl
     \ :<C-u>call repl#send_to_repl(getline(1, '$'), "\n")<CR>
-vnoremap <Plug>REPL_SendSelectionToRepl
+vnoremap <silent> <Plug>REPL_SendSelectionToRepl
     \ :<C-u>call repl#send_selection_to_repl()<CR>
 
 
@@ -65,8 +63,7 @@ augroup END
 nmap <Leader>ss <Plug>REPL_OpenHorizontalRepl
 nmap <Leader>sv <Plug>REPL_OpenVerticalRepl
 
-nmap <C-c><C-s> <Plug>REPL_RestartHorizontalRepl
-nmap <C-c><C-v> <Plug>REPL_RestartVerticalRepl
+nmap <C-c><C-r> <Plug>REPL_RestartRepl
 nmap <C-c><C-c> <Plug>REPL_SendLineToRepl
 nmap <C-c><C-f> <Plug>REPL_SendFileToRepl
 vmap <C-c><C-c> <Plug>REPL_SendSelectionToRepl

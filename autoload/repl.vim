@@ -35,30 +35,28 @@ function! repl#toggle_repl(vert, link)
   if bufwinnr(a:link) == -1
     if a:vert | vsplit | else | split | end
     exe a:link . "buffer"
-    exe "normal! \<C-w>p"
+    wincmd p
   else
     exe bufwinnr(a:link) . 'close!'
   end
 endfunction
 
 
-" FUNCTION: OpenRepl(vert, target) {{{1
+" FUNCTION: OpenRepl(vert) {{{1
 " ======================================================================
 " Opens a new REPL if one is not already bound to the current buffer
 
-function! repl#open_repl(vert, target)
+function! repl#open_repl(vert)
   let parent = bufnr('%')
+  let target = b:target_repl
   if has_key(s:repl_linkage, parent)
     call repl#toggle_repl(a:vert, s:repl_linkage[parent])
   else
     if a:vert | vsplit | else | split | end
     enew
-    if empty(a:target)
-      call termopen(g:repl_default_command)
-    else
-      call termopen(a:target)
-    end
+    call termopen(target)
     let s:repl_linkage[parent] = bufnr('%')
+    " Use this instead of wincmd to force focus back
     exe "normal! \<C-w>p"
   end
 endfunction
@@ -70,7 +68,7 @@ endfunction
 function! repl#delete_repl(filename)
   let bt = bufnr(a:filename)
   if has_key(s:repl_linkage, bt)
-    exe 'bdelete! ' . s:repl_linkage[bt]
+    exe 'bdelete! ' . db
     unlet s:repl_linkage[bt]
   endif
 endfunction
@@ -79,9 +77,33 @@ endfunction
 " FUNCTION: RestartRepl() {{{1
 " ======================================================================
 
-function! repl#restart_repl(vert)
-  call repl#delete_repl('%')
-  call repl#open_repl(a:vert, repl#get_target_repl())
+function! repl#restart_repl()
+  let parent = bufnr('%')
+  let target = b:target_repl
+  if has_key(s:repl_linkage, parent) && bufwinnr(s:repl_linkage[parent]) != -1
+    exe bufwinnr(s:repl_linkage[parent]) . "wincmd w"
+    enew!
+    call termopen(target)
+    let newbuf = bufnr('%')
+    exe bufwinnr(parent) . "wincmd w"
+    let s:repl_linkage[parent] = newbuf
+  endif
+endfunction
+
+
+" FUNCTION: EscapeData(data) {{{1
+" ======================================================================
+" Used for properly formatting text out to the target terminal.
+
+function! repl#escape_data(data)
+  if exists('*REPLEscapeData')
+    if type(a:data) == type('')
+      return REPLEscapeData(b:target_repl, [a:data])
+    else
+      return REPLEscapeData(b:target_repl, a:data)
+    endif
+  endif
+  return a:data
 endfunction
 
 
@@ -92,7 +114,7 @@ function! repl#send_to_repl(data)
   let parent = bufnr('%')
   if has_key(s:repl_linkage, parent)
     let term_id = getbufvar(s:repl_linkage[parent], 'terminal_job_id')
-    call jobsend(term_id, a:data)
+    call jobsend(term_id, repl#escape_data(a:data))
     call jobsend(term_id, "\n")
   endif
 endfunction
@@ -117,7 +139,7 @@ function! repl#get_target_repl()
       endif
     endfor
   endif
-  return ''
+  return g:repl_default_command
 endfunction
 
 
@@ -126,14 +148,13 @@ endfunction
 " Instantiates the mappings for the entered buffer
 
 function! repl#initialize_repl()
-  if exists('b:initialized_terminal_repl')
+  if exists('b:target_repl')
     return
   endif
-  let b:initialized_terminal_repl = 1
-  let target_repl = repl#get_target_repl()
+  let b:target_repl = repl#get_target_repl()
   exe 'noremap <silent> <buffer> <Plug>REPL_OpenHorizontalRepl ' .
-      \ ':call repl#open_repl(0, ''' . target_repl . ''')<CR>'
+      \ ':call repl#open_repl(0)<CR>'
   exe 'noremap <silent> <buffer> <Plug>REPL_OpenVerticalRepl ' .
-      \ ':call repl#open_repl(1, ''' . target_repl . ''')<CR>'
+      \ ':call repl#open_repl(1)<CR>'
 endfunction
 
