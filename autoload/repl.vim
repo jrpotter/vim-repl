@@ -81,7 +81,23 @@ endfunction
 
 function! repl#restart_repl(vert)
   call repl#delete_repl('%')
-  call repl#open_repl(a:vert, repl#get_target_repl())
+  call repl#open_repl(a:vert, b:target_repl)
+endfunction
+
+
+" FUNCTION: EscapeData(data) {{{1
+" ======================================================================
+" Used for properly formatting text out to the target terminal.
+
+function! repl#escape_data(data)
+  if exists('*REPLEscapeData')
+    if type(a:data) == type('')
+      return REPLEscapeData(b:target_repl, [a:data])
+    else
+      return REPLEscapeData(b:target_repl, a:data)
+    endif
+  endif
+  return a:data
 endfunction
 
 
@@ -92,7 +108,7 @@ function! repl#send_to_repl(data)
   let parent = bufnr('%')
   if has_key(s:repl_linkage, parent)
     let term_id = getbufvar(s:repl_linkage[parent], 'terminal_job_id')
-    call jobsend(term_id, a:data)
+    call jobsend(term_id, repl#escape_data(a:data))
     call jobsend(term_id, "\n")
   endif
 endfunction
@@ -126,14 +142,13 @@ endfunction
 " Instantiates the mappings for the entered buffer
 
 function! repl#initialize_repl()
-  if exists('b:initialized_terminal_repl')
+  if exists('b:target_repl')
     return
   endif
-  let b:initialized_terminal_repl = 1
-  let target_repl = repl#get_target_repl()
+  let b:target_repl = repl#get_target_repl()
   exe 'noremap <silent> <buffer> <Plug>REPL_OpenHorizontalRepl ' .
-      \ ':call repl#open_repl(0, ''' . target_repl . ''')<CR>'
+      \ ':call repl#open_repl(0, ''' . b:target_repl . ''')<CR>'
   exe 'noremap <silent> <buffer> <Plug>REPL_OpenVerticalRepl ' .
-      \ ':call repl#open_repl(1, ''' . target_repl . ''')<CR>'
+      \ ':call repl#open_repl(1, ''' . b:target_repl . ''')<CR>'
 endfunction
 
