@@ -56,8 +56,7 @@ function! repl#open_repl(vert)
     enew
     call termopen(target)
     let s:repl_linkage[parent] = bufnr('%')
-    " Use this instead of wincmd to force focus back
-    exe "normal! \<C-w>p"
+    wincmd p
   end
 endfunction
 
@@ -68,7 +67,7 @@ endfunction
 function! repl#delete_repl(filename)
   let bt = bufnr(a:filename)
   if has_key(s:repl_linkage, bt)
-    exe 'bdelete! ' . db
+    exe 'bdelete! ' . s:repl_linkage[bt]
     unlet s:repl_linkage[bt]
   endif
 endfunction
