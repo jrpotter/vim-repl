@@ -20,7 +20,7 @@ I prefer using [vim-plug](https://github.com/junegunn/vim-plug) for plugin
 management as follows:
 
 ```vim
-Plug 'jrpotter/vim-highlight'
+Plug 'jrpotter/vim-repl'
 ```
 
 Follow use according to plugin manager you use or optionally copy
