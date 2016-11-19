@@ -1,0 +1,37 @@
+*vim-repl* functionality of the REPL job receiver
+
+=============================================================================
+CONTENTS                                                  *vim-repl-contents*
+
+1. Usage ................................................... |vim-repl-usage|
+2. Variables ........................................... |vim-repl-variables|
+
+=============================================================================
+Section 1: Usage                                             *vim-repl-usage*
+
+<Leader>ss                          Open new terminal split horizontally.
+
+<Leader>sv                          Open new terminal split vertically.
+
+<C-c><C-c>                          Send current line to the bound REPL. Only
+                                    works if terminal already opened.
+
+v_<C-c><C-c>                        Send current selection to the bound REPL.
+                                    Only works if terminal already opened.
+
+<C-c><C-f>                          Send entire buffer contents to the REPL.
+
+<C-c><C-r>                          Restart the bound buffer.
+
+
+=============================================================================
+Section 2: Variables                                     *vim-repl-variables*
+
+g:repl_targets                      The REPLs that should be opened in order or
+                                    priority.
+
+g:repl_default_command              The command that should be run for
+                                    filetypes that do not have a REPL defined.
+
+
+vim:tw=78:ts=8:ft=help:norl:

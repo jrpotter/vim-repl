@@ -9,7 +9,7 @@
 
 " s:repl_linkage :: { Int : Int } {{{2
 " ----------------------------------------------------------------------
-" Pairs a buffer with the terminal_job_id it is bound to
+" Pairs a buffer with the buffer containing the terminal it sends data to
 
 let s:repl_linkage = {}
 
@@ -23,6 +23,7 @@ function! repl#get_visual_selection()
   let lines = getline(lnum1, lnum2)
   let lines[-1] = lines[-1][:col2 - 1]
   let lines[0] = lines[0][col1 - 1:]
+  return lines
 endfunction
 
 
@@ -57,10 +58,8 @@ function! repl#open_repl(vert, target)
     else
       call termopen(a:target)
     end
-    let bt = bufnr('%')
-    let bv = getbufvar('%', 'terminal_job_id')
+    let s:repl_linkage[parent] = bufnr('%')
     exe "normal! \<C-w>p"
-    let s:repl_linkage[parent] = bt
   end
 endfunction
 
@@ -92,7 +91,9 @@ endfunction
 function! repl#send_to_repl(data)
   let parent = bufnr('%')
   if has_key(s:repl_linkage, parent)
-    call jobsend(s:repl_linkage[parent], a:data)
+    let term_id = getbufvar(s:repl_linkage[parent], 'terminal_job_id')
+    call jobsend(term_id, a:data)
+    call jobsend(term_id, "\n")
   endif
 endfunction
 
@@ -109,8 +110,8 @@ endfunction
 " ======================================================================
 
 function! repl#get_target_repl()
-  if has_key(s:repl_targets, &filetype)
-    for repl in s:repl_targets[&filetype]
+  if has_key(g:repl_targets, &filetype)
+    for repl in g:repl_targets[&filetype]
       if executable(repl)
         return repl
       endif
@@ -129,9 +130,10 @@ function! repl#initialize_repl()
     return
   endif
   let b:initialized_terminal_repl = 1
-  let target_repl = s:GetTargetRepl()
-  exe ' nnoremap <silent> <buffer> <Plug>OpenHorizontalRepl ' .
+  let target_repl = repl#get_target_repl()
+  exe 'noremap <silent> <buffer> <Plug>REPL_OpenHorizontalRepl ' .
       \ ':call repl#open_repl(0, ''' . target_repl . ''')<CR>'
-  exe ' nnoremap <silent> <buffer> <Plug>OpenVerticalRepl ' .
+  exe 'noremap <silent> <buffer> <Plug>REPL_OpenVerticalRepl ' .
       \ ':call repl#open_repl(1, ''' . target_repl . ''')<CR>'
 endfunction
+

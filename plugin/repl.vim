@@ -13,34 +13,44 @@ let g:loaded_repl = 1
 " GLOBAL VARIABLES: {{{1
 " ======================================================================
 
-" s:repl_targets :: { String : [String] } {{{2
+" g:repl_targets :: { String : [String] } {{{2
 " ----------------------------------------------------------------------
 " The REPLs that should be opened in order of priority. For instance,
 " currently for detected python filetypes we first attempt to order an
 " iPython REPL and, barring that, a python3 REPL. If no possible REPL
 " exists, we instead issue out the default command.
 
-let g:repl_targets = {
-    \ 'python' : ['ipython', 'python3'],
-    \ 'haskell' : ['ghci'],
-    \ }
+if !exists('g:repl_targets')
+  let g:repl_targets = {
+      \ 'python' : ['ipython', 'python3'],
+      \ 'haskell' : ['ghci'],
+      \ }
+endif
 
-" s:repl_default_command :: String {{{2
+
+" g:repl_default_command :: String {{{2
 " ----------------------------------------------------------------------
 " The default shell command that should be run when no proper REPL is
 " found.
 
-let g:repl_default_command = "$SHELL -d -f"
+if !exists('g:repl_default_command')
+  let g:repl_default_command = "$SHELL -d -f"
+endif
 
 
 " MAPPINGS: Plug Mappings {{{1
 " ======================================================================
 
-nnoremap <Plug>RestartHorizontalRepl :call <SID>RestartRepl(0)<CR>
-nnoremap <Plug>RestartVerticalRepl :call <SID>RestartRepl(1)<CR>
-nnoremap <Plug>SendLineToRepl :call <SID>SendToRepl(getline('.'))<CR>
-nnoremap <Plug>SendFileToRepl :call <SID>SendToRepl(getline(1, '$'))<CR>
-vnoremap <Plug>SendSelectionToRepl :call <SID>SendSelectionToRepl()<CR>
+nnoremap <Plug>REPL_RestartHorizontalRepl
+    \ :<C-u>call repl#restart_repl(0)<CR>
+nnoremap <Plug>REPL_RestartVerticalRepl
+    \ :<C-u>call repl#restart_repl(1)<CR>
+nnoremap <Plug>REPL_SendLineToRepl
+    \ :<C-u>call repl#send_to_repl(getline('.'))<CR>
+nnoremap <Plug>REPL_SendFileToRepl
+    \ :<C-u>call repl#send_to_repl(getline(1, '$'), "\n")<CR>
+vnoremap <Plug>REPL_SendSelectionToRepl
+    \ :<C-u>call repl#send_selection_to_repl()<CR>
 
 
 " PROCEDURE: Initialize {{{1
@@ -48,16 +58,16 @@ vnoremap <Plug>SendSelectionToRepl :call <SID>SendSelectionToRepl()<CR>
 
 augroup repl_buf_autocommands
   autocmd!
-  autocmd BufEnter * call <SID>InitializeRepl()
-  autocmd BufUnload * call <SID>DeleteSlime(expand('<afile>'))
+  autocmd BufEnter * call repl#initialize_repl()
+  autocmd BufUnload * call repl#delete_repl(expand('<afile>'))
 augroup END
 
-nnoremap <Leader>ss <Plug>OpenHorizontalRepl
-nnoremap <Leader>sv <Plug>OpenVerticalRepl
+nmap <Leader>ss <Plug>REPL_OpenHorizontalRepl
+nmap <Leader>sv <Plug>REPL_OpenVerticalRepl
 
-nnoremap <C-c><C-s> <Plug>RestartHorizontalRepl
-nnoremap <C-c><C-v> <Plug>RestartVerticalRepl
-nnoremap <C-c><C-c> <Plug>SendLineToRepl
-nnoremap <C-c><C-f> <Plug>SendFileToRepl
-vnoremap <C-c><C-c> <Plug>SendSelectionToRepl
+nmap <C-c><C-s> <Plug>REPL_RestartHorizontalRepl
+nmap <C-c><C-v> <Plug>REPL_RestartVerticalRepl
+nmap <C-c><C-c> <Plug>REPL_SendLineToRepl
+nmap <C-c><C-f> <Plug>REPL_SendFileToRepl
+vmap <C-c><C-c> <Plug>REPL_SendSelectionToRepl
 

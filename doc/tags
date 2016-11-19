@@ -1,0 +1,4 @@
+vim-repl	repl.txt	/*vim-repl*
+vim-repl-contents	repl.txt	/*vim-repl-contents*
+vim-repl-usage	repl.txt	/*vim-repl-usage*
+vim-repl-variables	repl.txt	/*vim-repl-variables*
