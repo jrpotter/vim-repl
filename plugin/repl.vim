@@ -41,13 +41,13 @@ endif
 " MAPPINGS: Plug Mappings {{{1
 " ======================================================================
 
-nnoremap <Plug>REPL_RestartRepl
+nnoremap <silent> <Plug>REPL_RestartRepl
     \ :<C-u>call repl#restart_repl()<CR>
-nnoremap <Plug>REPL_SendLineToRepl
+nnoremap <silent> <Plug>REPL_SendLineToRepl
     \ :<C-u>call repl#send_to_repl(getline('.'))<CR>
-nnoremap <Plug>REPL_SendFileToRepl
+nnoremap <silent> <Plug>REPL_SendFileToRepl
     \ :<C-u>call repl#send_to_repl(getline(1, '$'), "\n")<CR>
-vnoremap <Plug>REPL_SendSelectionToRepl
+vnoremap <silent> <Plug>REPL_SendSelectionToRepl
     \ :<C-u>call repl#send_selection_to_repl()<CR>
 
 

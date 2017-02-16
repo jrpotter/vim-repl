@@ -35,31 +35,28 @@ function! repl#toggle_repl(vert, link)
   if bufwinnr(a:link) == -1
     if a:vert | vsplit | else | split | end
     exe a:link . "buffer"
-    exe "normal! \<C-w>p"
+    wincmd p
   else
     exe bufwinnr(a:link) . 'close!'
   end
 endfunction
 
 
-" FUNCTION: OpenRepl(vert, target) {{{1
+" FUNCTION: OpenRepl(vert) {{{1
 " ======================================================================
 " Opens a new REPL if one is not already bound to the current buffer
 
-function! repl#open_repl(vert, target)
+function! repl#open_repl(vert)
   let parent = bufnr('%')
+  let target = b:target_repl
   if has_key(s:repl_linkage, parent)
     call repl#toggle_repl(a:vert, s:repl_linkage[parent])
   else
     if a:vert | vsplit | else | split | end
     enew
-    if empty(a:target)
-      call termopen(g:repl_default_command)
-    else
-      call termopen(a:target)
-    end
+    call termopen(target)
     let s:repl_linkage[parent] = bufnr('%')
-    exe "normal! \<C-w>p"
+    wincmd p
   end
 endfunction
 
@@ -79,9 +76,18 @@ endfunction
 " FUNCTION: RestartRepl() {{{1
 " ======================================================================
 
-function! repl#restart_repl(vert)
-  call repl#delete_repl('%')
-  call repl#open_repl(a:vert, b:target_repl)
+function! repl#restart_repl()
+  let parent = bufnr('%')
+  let target = b:target_repl
+  if has_key(s:repl_linkage, parent) && bufwinnr(s:repl_linkage[parent]) != -1
+    exe bufwinnr(s:repl_linkage[parent]) . "wincmd w"
+    enew!
+    call termopen(target)
+    let newbuf = bufnr('%')
+    exe bufwinnr(parent) . "wincmd w"
+    exe 'bdelete! ' . s:repl_linkage[parent]
+    let s:repl_linkage[parent] = newbuf
+  endif
 endfunction
 
 
@@ -133,7 +139,7 @@ function! repl#get_target_repl()
       endif
     endfor
   endif
-  return ''
+  return g:repl_default_command
 endfunction
 
 
@@ -147,8 +153,8 @@ function! repl#initialize_repl()
   endif
   let b:target_repl = repl#get_target_repl()
   exe 'noremap <silent> <buffer> <Plug>REPL_OpenHorizontalRepl ' .
-      \ ':call repl#open_repl(0, ''' . b:target_repl . ''')<CR>'
+      \ ':call repl#open_repl(0)<CR>'
   exe 'noremap <silent> <buffer> <Plug>REPL_OpenVerticalRepl ' .
-      \ ':call repl#open_repl(1, ''' . b:target_repl . ''')<CR>'
+      \ ':call repl#open_repl(1)<CR>'
 endfunction
 
